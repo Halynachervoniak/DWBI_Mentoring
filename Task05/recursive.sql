@@ -14,7 +14,7 @@ SELECT m.[DepartmentID]
       ,m.[Name] 
       ,v.DepartmentPath +  '/'+ (cast (m.[Name] as nvarchar(4000)) )
 FROM [Depts].[Departments] m 
-  JOIN Rec  v ON v.[DepartmentID]<>m.[DepartmentID]
+  JOIN Rec  v ON v.[DepartmentID]<>m.[DepartmentID]   -- подумай як ти розкручуєш рекурсію, по яких колонках збудована ієрархія.
 ) 
 select  * 
 FROM Rec t --option (maxrecursion 100)
