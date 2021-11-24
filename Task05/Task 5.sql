@@ -1,9 +1,32 @@
-ï»¿/* 
+--Subtask.05.02 Topic: Window Ranking Functions 
+--Task: Prepare result set without duplicated records from table @T 
+--using ROW_NUMBER() function 
+--Use the following script: 
+--DECLARE @T TABLE(PersonName NVARCHAR(50), PersonAge INT); 
+--INSERT INTO @T VALUES(N'Âàñÿ', 19),(N'Êàòÿ', 20),(N'Âàñÿ', 19),(N'Êàòÿ', 20),(N'Þëÿ', 19),(N'Þëÿ', 20);
+--SELECT * FROM @T; Expected result: result set must be without duplicates 
+
+DECLARE @T TABLE(PersonName NVARCHAR(50), PersonAge INT); 
+INSERT INTO @T VALUES(N'Âàñÿ', 19),(N'Êàòÿ', 20),(N'Âàñÿ', 19),(N'Êàòÿ', 20),(N'Þëÿ', 19),(N'Þëÿ', 20); 
+;WITH Cte
+AS(
+SELECT 
+   ROW_NUMBER() OVER (PARTITION BY PersonName ORDER BY  PersonAge ) row_num,
+   RANK () OVER (PARTITION BY PersonName ORDER BY  PersonAge ) row_rank,
+   PersonName, 
+   PersonAge
+
+   FROM @T)
+   SELECT *
+   FROM Cte AS d
+   WHERE d.row_num=1
+
+   /* 
 --Subtask.05.03 
 --Topic: Working with a Single Grouping Set 
 --Task: The company wants to see the changing of the total due of orders in the different countries on the year base.
---Display the following columns: Â·
---Territory Name Â· Order Year Â· Total Due Â· Previous Total Due (calculate total due for the previous year and the same territory)*/
+--Display the following columns: ·
+--Territory Name · Order Year · Total Due · Previous Total Due (calculate total due for the previous year and the same territory)*/
 ;WITH cte 
 AS
     (SELECT h.[TerritoryID] AS [TerritoryID]
@@ -22,16 +45,17 @@ AS
      FROM cte
      ORDER BY [TerritoryName],[OrderYear]
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
+
 /*----Subtask.05.04 
 --Topic: Working with Multiple Grouping Sets 
 --Task: The company wants to see and analyze the total due of orders made by Territory Group, Territory,
 --Year and Sales Person with totals.
 --Calculate Total made by Sales person in a year. Calculate totals for Territory Group and Name.
---Calculate grand total. Display the following columns: Â· Territory Group Â· Territory Name
---Order Year Â· Full Name Â· Total due Expected result - the only one query.*/
-SELECT  t.[Group] AS [Territory Group]
+--Calculate grand total. Display the following columns: · Territory Group · Territory Name
+--· Order Year · Full Name · Total due Expected result - the only one query.*/
+;WITH cte 
+as
+    (SELECT  t.[Group] AS [Territory Group]
            , t.[Name]  AS [Territory Name]
            , YEAR(h.[OrderDate]) AS [OrderYear]
            , p.[FirstName] + ' ' + p.[LastName] as [Full Name]
@@ -48,3 +72,13 @@ SELECT  t.[Group] AS [Territory Group]
              (YEAR(h.[OrderDate])),
              (p.[FirstName] , p.[LastName])
              )
+         )
+
+SELECT
+       [Territory Group]
+      ,[Territory Name]
+      ,[OrderYear]
+      ,[Full Name]
+      ,[SumTotalDue]
+FROM cte a
+
