@@ -22,39 +22,19 @@ Expected result:
 … 
 */
 
--- option 1
-select Header.[CustomerID],
-       Header.OrderDate, 
-       Header.[SalesOrderID]
-      ,p.[FirstName] +' ' + ISNULL(p.[MiddleName],' ') +' ' + p.[LastName] AS [Name]
-from [Sales].[Customer] Customer
-join [Sales].[SalesOrderHeader] Header on Header.CustomerID=Customer.CustomerID
-join [Sales].[SalesPerson] b on b.TerritoryID=Customer.TerritoryID
-join [Person].[Person] p on p.[BusinessEntityID]=b.BusinessEntityID
-WHERE [ShipDate] IS NOT NULL
-GROUP BY Header.[CustomerID],p.[FirstName],p.[MiddleName],p.[LastName],
-       Header.OrderDate,Header.[SalesOrderID]
-ORDER BY Header.OrderDate
-FOR XML PATH ('Customer'),  ROOT('Customer')
---FOR XML AUTO, ELEMENTS--, ROOT('Customer');
---FOR XML RAW;
---FOR XML AUTO;
-
--- option 2 NESTED
 select Customer.[CustomerID] AS [@custid],
       p.[FirstName] +' ' + ISNULL(p.[MiddleName],' ') +' ' + p.[LastName] AS [@Name],
       ( 
-      select        Header.[SalesOrderID] as [@orderid], 
-                      Header.OrderDate as [@orderdate]
-      from  [Sales].[SalesOrderHeader] Header 
-      WHERE Header.CustomerID=Customer.CustomerID
-      AND Header.[ShipDate] IS NOT NULL
-      ORDER BY Header.[SalesOrderID]
-      FOR XML PATH ('Header'),  TYPE
+      select        [Order].[SalesOrderID] as [@orderid], 
+                      [Order].OrderDate as [@orderdate]
+      from  [Sales].[SalesOrderHeader] [Order] 
+      WHERE [Order].CustomerID=Customer.CustomerID
+      AND [Order].[ShipDate] IS NOT NULL
+      ORDER BY [Order].[SalesOrderID]
+      FOR XML PATH ('Order'),  TYPE
       )
 FROM [Sales].[Customer] as Customer
-join [Sales].[SalesPerson] b on b.TerritoryID=Customer.TerritoryID
-join [Person].[Person] p on p.[BusinessEntityID]=b.BusinessEntityID
+join [Person].[Person] p on p.[BusinessEntityID]=Customer.PersonID
 --WHERE [ShipDate] IS NOT NULL
 --GROUP BY Customer.[CustomerID],p.[FirstName],p.[MiddleName],p.[LastName]
        
@@ -213,10 +193,10 @@ SELECT[ProductID]
       ,[Color]
       ,[SafetyStockLevel]
       ,[ReorderPoint]
-      ,[SellStartDate]
-      ,[ModifiedDate]
+      ,[SellStartDate] AS [Date.SellStartDate]
+      ,[ModifiedDate] as [Date.ModifiedDate]
 FROM [Production].[Product]
-FOR JSON AUTO;
+FOR JSON PATH ,INCLUDE_NULL_VALUES;
 
 
 --Subtask.05.05	Topic: Extract values from JSON text and use them in queries
@@ -238,27 +218,7 @@ Display following column
 */
 
 ---Subtask.05.05 option 1
-DECLARE @json AS NVARCHAR(MAX) = N'
-{"UserID":1,"UserName":"Andrey Potapov","Email":"Andrey.Potapov@insidemedia.onmicrosoft.com",
-"Flags":1,"Notes":"","Type":1,"DisplayName":"Andrey Potapov","sysinfo":
-{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},
-{"UserID":2,"UserName":"Michail Kovalenko","Email":"michail.kovalenko@insidemedia.onmicrosoft.com","Flags":1,
-"Notes":"","Type":1,"DisplayName":"Michail Kovalenko","sysinfo":{"CreatedAt":"2018-01-29T15:06:43.3300000",
-"ChangedAt":"2018-01-29T15:06:43.3300000"}},{"UserID":5,"UserName":"Anton Belousov","Email":"Anton.Belousov@insidemedia.onmicrosoft.com",
-"Flags":1,"Type":1,"DisplayName":"Anton Belousov","sysinfo":{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},
-{"UserID":6,"UserName":"Arturo Morales","Email":"Arturo.Morales@insidemedia.onmicrosoft.com","Flags":1,"Type":1,
-"DisplayName":"Arturo Morales","sysinfo":{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},
-{"UserID":7,"UserName":"Bruno Silveira","Email":"bruno.silveira@groupm.com","Flags":1,"Type":1,"DisplayName":"Bruno Silveira","sysinfo":
-{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},{"UserID":8,"UserName":"Daniel Escribano",
-"Email":"Daniel.Escribano@insidemedia.onmicrosoft.com","Flags":1,"Type":1,"DisplayName":"Daniel Escribano","sysinfo"
-:{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},{"UserID":9,"UserName":"Dariia Vasilenko",
-"Email":"dariia.vasilenko@insidemedia.onmicrosoft.com","Flags":1,"Type":1,"DisplayName":"Dariia Vasilenko","sysinfo":
-{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},{"UserID":10,"UserName":
-"Darya Pivikova","Email":"darya.pivikova@insidemedia.onmicrosoft.com","Flags":1,"Type":1,"DisplayName":
-"Darya Pivikova","sysinfo":{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},
-{"UserID":11,"UserName":"Dmitri Sedin","Email":"Dmitri.Sedin@insidemedia.onmicrosoft.com"}
- '; 
- --Subtask.05.05 option 2
+ 
 
 DECLARE @JSON NVARCHAR(MAX) = N'[
 {"UserID":1,"UserName":"Andrey Potapov","Email":"Andrey.Potapov@insidemedia.onmicrosoft.com",
@@ -280,7 +240,23 @@ DECLARE @JSON NVARCHAR(MAX) = N'[
 "Darya Pivikova","sysinfo":{"CreatedAt":"2018-01-29T15:06:43.3300000","ChangedAt":"2018-01-29T15:06:43.3300000"}},
 {"UserID":11,"UserName":"Dmitri Sedin","Email":"Dmitri.Sedin@insidemedia.onmicrosoft.com"}
  ]'; 
-SELECT root.[key] AS [Order],TheValues.[key], TheValues.[value]
-FROM OPENJSON ( @JSON ) AS root
-CROSS APPLY OPENJSON ( root.value) AS TheValues;
+SELECT *
+FROM OPENJSON(@json) 
+WITH
+ (
+ [ID] INT '$.UserID' , 
+ [UserName] NVARCHAR(20) '$.UserName', 
+ [ActualEmail] NVARCHAR(MAX) '$.Email' ,
+ [Email] NVARCHAR(40) '$.Email',
+ [Flags] INT '$.Flags',
+[Notes] NVARCHAR(20) '$.Notes',
+[Type] INT '$.Type',
+[DisplayName] NVARCHAR(40) '$.DisplayName',
+[CreatedDate] NVARCHAR(40)'$.sysinfo.CreatedAt',
+[LastModifiedDate]NVARCHAR(40)'$.sysinfo.ChangedAt'
+);
+
+
+
+
 

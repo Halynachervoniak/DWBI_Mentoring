@@ -1,5 +1,5 @@
-use AdventureWorks2019;
-go
+USE AdventureWorks2019;
+GO
 --     Subtask.03               -------------------
 /*Create T-SQL script to get a set of products with [ProductID], [Name] from [Production].[Product] table for which color is not equal Silver */
 SELECT p.[ProductID]
@@ -18,27 +18,26 @@ Show only BusinessEntityID, [FirstName],[MiddleName],[LastName] and modified dat
 */
 SELECT P.[BusinessEntityID]
       ,P.[FirstName]
+      ,P.[LastName]
       ,P.[MiddleName]
       ,P.[ModifiedDate]
  FROM [Person].[Person] AS P
- WHERE YEAR(P.[ModifiedDate]) = 2009 
+ WHERE P.[ModifiedDate] BETWEEN '2014-01-01' AND '2014-12-31' 
    AND P.[MiddleName] IS NULL;
 
 --     Subtask.05               -------------------
 /*Create T-SQL script to get a set of persons modified in April, 2014 from [Person].[Person] table. 
 Show full name combined using [FirstName],[MiddleName],[LastName] 
 */
-SELECT [FirstName] +' ' + [MiddleName] + ' ' + [LastName] AS [FullName]
+SELECT [FirstName] +' ' + ISNULL([MiddleName], ' ') + ' ' + [LastName] AS [FullName]
  FROM [Person].[Person] AS P
- WHERE YEAR(P.[ModifiedDate]) = 2014 
-   AND MONTH(P.[ModifiedDate]) = 4
-   AND P.[MiddleName] IS NOT NULL;
+ WHERE P.[ModifiedDate] BETWEEN '2014-04-01' AND '2014-04-30';
 
 --     Subtask.06               -------------------
 /*Create T-SQL script to get a set of persons which have “an” in their First Name and their Middle Name starts with “B”. 
 Show full name combined using [FirstName],[MiddleName],[LastName] 
 */
-SELECT [FirstName] +' ' + [MiddleName] + ' ' + [LastName] AS [FullName]
+SELECT [FirstName] +' ' + ISNULL([MiddleName], ' ') + ' ' + [LastName] AS [FullName]
  FROM [Person].[Person] AS P
  WHERE P.[FirstName] LIKE '%an%'
    AND P.[MiddleName] LIKE 'B%';
@@ -52,19 +51,18 @@ SELECT [FirstName] +' ' + [MiddleName] + ' ' + [LastName] AS [FullName]
 Order the list by full name of employees 
 */
 WITH cte 
-as (
-SELECT ISNULL(P.[FirstName],' ') +' ' + ISNULL(P.[MiddleName],' ') + ' ' + ISNULL(P.[LastName],' ') AS [FullName]
-      , DATEDIFF(year,[BirthDate],GETDATE()) AS [YearsOld1]--?
-      , (DATEDIFF(month,[BirthDate],GETDATE()))/12  AS [YearsOld]--? why whole number
-      , [BirthDate] AS [BirthDate]
-      , GETDATE() AS [CurrentDate]
-      , CASE 
-            WHEN Gender ='M' THEN (60-(DATEDIFF(month,[BirthDate],GETDATE()))/12)
-            WHEN Gender ='F' THEN (55-(DATEDIFF(month,[BirthDate],GETDATE()))/12)
-            END AS [YearsBeforeRetirement]
- FROM [HumanResources].[Employee] AS E
- JOIN [Person].[Person] AS P
-   ON E.[BusinessEntityID]=P.[BusinessEntityID])
+AS (
+     SELECT [FirstName] +' ' + ISNULL([MiddleName], ' ') + ' ' + [LastName] AS [FullName]
+           , (DATEDIFF(month,[BirthDate],GETDATE()))/12.00  AS [YearsOld]
+           , [BirthDate] AS [BirthDate]
+           , GETDATE() AS [CurrentDate]
+           , CASE 
+                 WHEN Gender ='M' THEN (60-(DATEDIFF(month,[BirthDate],GETDATE()))/12.00)
+                 WHEN Gender ='F' THEN (55-(DATEDIFF(month,[BirthDate],GETDATE()))/12.00)
+                 END AS [YearsBeforeRetirement]
+      FROM [HumanResources].[Employee] AS E
+      JOIN [Person].[Person] AS P   ON E.[BusinessEntityID]=P.[BusinessEntityID]
+        )
 
  SELECT m.[FullName]
       , m.[YearsOld]
