@@ -1,3 +1,6 @@
+USE [AdventureWorks2019]
+GO;
+
 --Subtask.05.02 Topic: Window Ranking Functions 
 --Task: Prepare result set without duplicated records from table @T 
 --using ROW_NUMBER() function 
@@ -12,7 +15,7 @@ INSERT INTO @T VALUES(N'Вася', 19),(N'Катя', 20),(N'Вася', 19),(N'Катя', 20),(N'
 AS(
 SELECT 
    ROW_NUMBER() OVER (PARTITION BY PersonName ORDER BY  PersonAge ) row_num,
-   RANK () OVER (PARTITION BY PersonName ORDER BY  PersonAge ) row_rank,
+   --RANK () OVER (PARTITION BY PersonName ORDER BY  PersonAge ) row_rank,
    PersonName, 
    PersonAge
 
@@ -73,7 +76,6 @@ as
              (p.[FirstName] , p.[LastName])
              )
          )
-
 SELECT
        [Territory Group]
       ,[Territory Name]
