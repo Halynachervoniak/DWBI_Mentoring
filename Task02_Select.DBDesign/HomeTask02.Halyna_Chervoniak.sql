@@ -50,26 +50,40 @@ SELECT [FirstName] +' ' + ISNULL([MiddleName], ' ') + ' ' + [LastName] AS [FullN
 •	Mark if the person overcome retirement age (Yes or No) - [OvercomeRetirementAge] 
 Order the list by full name of employees 
 */
-WITH cte 
+declare @d date = '2021-09-10',-- getdate(), 
+        @d1 date;
+
+;WITH cte 
 AS (
      SELECT [FirstName] +' ' + ISNULL([MiddleName], ' ') + ' ' + [LastName] AS [FullName]
-           , (DATEDIFF(month,[BirthDate],GETDATE()))/12.00  AS [YearsOld]
+           , (DATEDIFF(month,[BirthDate],@d))/12.00  AS [YearsOld_old]  -- ?
+           --,year(@d) - year([BirthDate]) as DifY
+           ,datediff(year, [BirthDate], @d)
+                - case when datefromparts(year(@d), month(BirthDate), day(BirthDate) + case when (month(BirthDate) = 2 and day(BirthDate) = 29) then -1 else 0 end) > @d then 1 else 0 end as YearsOld
            , [BirthDate] AS [BirthDate]
-           , GETDATE() AS [CurrentDate]
-           , CASE 
-                 WHEN Gender ='M' THEN (60-(DATEDIFF(month,[BirthDate],GETDATE()))/12.00)
-                 WHEN Gender ='F' THEN (55-(DATEDIFF(month,[BirthDate],GETDATE()))/12.00)
-                 END AS [YearsBeforeRetirement]
+           ,Gender
+           , @d AS [CurrentDate]
       FROM [HumanResources].[Employee] AS E
-      JOIN [Person].[Person] AS P   ON E.[BusinessEntityID]=P.[BusinessEntityID]
-        )
-
- SELECT m.[FullName]
+        JOIN [Person].[Person] AS P   ON E.[BusinessEntityID] = P.[BusinessEntityID] --where FirstName = 'Betsy'
+        ),
+cte_b as (
+SELECT m.[FullName]
       , m.[YearsOld]
-      , m.[YearsBeforeRetirement]
-      , CASE
-         WHEN m.[YearsBeforeRetirement] < 0 THEN 'Yes'
-         WHEN m.[YearsBeforeRetirement] > 0 THEN 'No'
-         END AS [OvercomeRetirementAge]
-  FROM cte m
- ORDER BY m.[FullName];
+      , case m.Gender when 'M' then 60 
+                      when 'F' then 55 
+                      else null end  - m.YearsOld as YearsBeforeRetirement
+FROM cte m
+)
+select 
+    FullName,
+    YearsOld,
+    YearsBeforeRetirement,
+    case when YearsBeforeRetirement < 0 then 'Yes' else 'No' end as OvercomeRetirementAge
+from cte_b
+ORDER BY [FullName];
+
+ -- Betsy A Stadick	55.000000	1966-12-17	0	NULL
+ ------------------------------------------------------
+declare @y date = '2020-02-29';  -- leap year
+declare  @y1 date = datefromparts(year(getdate()), month(@y), day(@y));
+select @y, @y1

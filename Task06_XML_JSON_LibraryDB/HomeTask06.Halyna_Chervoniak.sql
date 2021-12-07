@@ -136,7 +136,164 @@ GO
 				<sum>33900</sum>
 			</product>*/
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+declare @xmldata xml  ;  
+SET @xmldata = N'
+<export xmlns:oos="http://zakupki.gov.ru/oos/types/1" xmlns="http://zakupki.gov.ru/oos/export/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<contract schemeVersion="4.5">
+		<oos:id>17309240</oos:id>
+		<oos:regNum>0376200001114000031</oos:regNum>
+		<oos:number>13-ЗК</oos:number>
+		<oos:publishDate>2014-10-03T12:20:03Z</oos:publishDate>
+		<oos:signDate>2014-10-03</oos:signDate>
+		<oos:versionNumber>0</oos:versionNumber>
+		<oos:foundation>
+			<oos:fcsOrder>
+				<oos:notificationNumber>0376200001114000013</oos:notificationNumber>
+				<oos:lotNumber>1</oos:lotNumber>
+				<oos:placing>9</oos:placing>
+			</oos:fcsOrder>
+		</oos:foundation>
+		<oos:customer>
+			<oos:regNum>03762000011</oos:regNum>
+			<oos:fullName>Государственное бюджетное учреждение здравоохранения Республики Адыгея "Адыгейский республиканский клинический перинатальный центр"</oos:fullName>
+			<oos:inn>0105031422</oos:inn>
+			<oos:kpp>010501001</oos:kpp>
+		</oos:customer>
+		<oos:protocolDate>2014-09-23</oos:protocolDate>
+		<oos:documentBase>Протокол рассмотрения и оценки заявок на участие в запросе котировок №П1 от 23.09.2014</oos:documentBase>
+		<oos:price>145000</oos:price>
+		<oos:currency>
+			<oos:code>RUB</oos:code>
+			<oos:name>Российский рубль</oos:name>
+		</oos:currency>
+		<oos:executionDate>
+		<oos:month>12</oos:month>
+		<oos:year>2014</oos:year>
+		</oos:executionDate>
+		<oos:finances>
+			<oos:financeSource>Внебюджетные средства ОМС</oos:financeSource>
+			<oos:budgetLevel>00</oos:budgetLevel>
+			<oos:extrabudgetary>
+			<oos:month>12</oos:month>
+			<oos:year>2014</oos:year>
+			<oos:substageMonth>12</oos:substageMonth>
+			<oos:substageYear>2014</oos:substageYear>
+			<oos:KOSGU>340</oos:KOSGU>
+			<oos:price>145000</oos:price>
+			</oos:extrabudgetary>
+		</oos:finances>
+		<oos:products>
+			<oos:product>
+				<oos:sid>64156228</oos:sid>
+				<oos:OKPD>
+					<oos:code>25.22.11.130</oos:code>
+					<oos:name/>
+				</oos:OKPD>
+				<oos:name>Пакет для утилизации медицинских отходов класса Б № 100 </oos:name>
+				<oos:OKEI>
+					<oos:code>778</oos:code>
+					<oos:nationalCode>УПАК</oos:nationalCode>
+				</oos:OKEI>
+				<oos:price>210.50</oos:price>
+				<oos:quantity>200</oos:quantity>
+				<oos:sum>42100</oos:sum>
+			</oos:product>
+			<oos:product>
+				<oos:sid>64156229</oos:sid>
+				<oos:OKPD>
+					<oos:code>25.22.11.130</oos:code>
+					<oos:name/>
+				</oos:OKPD>
+				<oos:name>Пакет для утилизации медицинских отходов класса А № 100</oos:name>
+				<oos:OKEI>
+					<oos:code>778</oos:code>
+					<oos:nationalCode>УПАК</oos:nationalCode>
+				</oos:OKEI>
+				<oos:price>500</oos:price>
+				<oos:quantity>90</oos:quantity>
+				<oos:sum>45000</oos:sum>
+			</oos:product>
+			<oos:product>
+				<oos:sid>64156230</oos:sid>
+				<oos:OKPD>
+					<oos:code>25.22.11.130</oos:code>
+					<oos:name/>
+				</oos:OKPD>
+				<oos:name>Пакет для утилизации медицинских отходов класса Б № 100</oos:name>
+				<oos:OKEI>
+					<oos:code>778</oos:code>
+					<oos:nationalCode>УПАК</oos:nationalCode>
+				</oos:OKEI>
+				<oos:price>300</oos:price>
+				<oos:quantity>80</oos:quantity>
+				<oos:sum>24000</oos:sum>
+			</oos:product>
+			<oos:product>
+				<oos:sid>64156231</oos:sid>
+				<oos:OKPD>
+					<oos:code>25.22.11.130</oos:code>
+					<oos:name/>
+				</oos:OKPD>
+				<oos:name>Пакет для утилизации медицинских отходов класса А № 100</oos:name>
+				<oos:OKEI>
+					<oos:code>778</oos:code>
+					<oos:nationalCode>УПАК</oos:nationalCode>
+				</oos:OKEI>
+				<oos:price>226</oos:price>
+				<oos:quantity>150</oos:quantity>
+				<oos:sum>33900</oos:sum>
+			</oos:product>
+		</oos:products>
+		<oos:suppliers>
+			<oos:supplier>
+				<oos:participantType>U</oos:participantType>
+				<oos:inn>0105070446</oos:inn>
+				<oos:kpp>010501001</oos:kpp>
+				<oos:organizationName>ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "ШАГДИ"</oos:organizationName>
+				<oos:country>
+					<oos:countryCode>643</oos:countryCode>
+					<oos:countryFullName>Российская Федерация</oos:countryFullName>
+				</oos:country>
+				<oos:factualAddress>385011, Респ Адыгея, г Майкоп, ул Пионерская, 407, 117</oos:factualAddress>
+				<oos:contactPhone>8-8772-210114</oos:contactPhone>
+			</oos:supplier>
+		</oos:suppliers>
+		<oos:printForm>
+			<oos:docRegNumber>03762000011140000310001</oos:docRegNumber>
+			<oos:signature type="CAdES-A">3A4D5451794D714156C4968534457687239</oos:signature>
+		</oos:printForm>
+		<oos:scanDocuments>
+			<oos:attachment>
+				<oos:fileName>13.pdf</oos:fileName>
+				<oos:docDescription>13</oos:docDescription>
+				<oos:docRegNumber>03762000011140000310002</oos:docRegNumber>
+				<oos:cryptoSigns>
+					<oos:signature type="CAdES-A">436875454F724F33766D3459684547A385A4A4545483248</oos:signature>
+				</oos:cryptoSigns>
+			</oos:attachment>
+		</oos:scanDocuments>
+		<oos:currentContractStage>E</oos:currentContractStage>
+	</contract>
+</export>
+'
 
+DECLARE @hDoc int, @rootxmlns varchar(100);
+
+SET @rootxmlns = '<root xmlns:hm="http://zakupki.gov.ru/oos/export/1" xmlns:oos="http://zakupki.gov.ru/oos/types/1"/>'
+EXEC sp_xml_preparedocument @hDoc OUTPUT, @xmldata, @rootxmlns
+
+SELECT *
+FROM OPENXML(@hDoc, '//hm:contract/oos:products/oos:product',2)
+        WITH(name  NVARCHAR(200)  './oos:name',
+             price decimal (10,2) './oos:price',
+             quantity  int   './oos:quantity')
+
+
+EXEC sys.sp_xml_removedocument @hDoc; 
+GO 
+--------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
 --     Subtask.05.03	Topic: Querying and Managing XML Data
 /*Task: Get list of ProductName as a single line separated by commas, and a separator in alphabetical order. 
 Use [Production].[Product]. 
@@ -257,6 +414,6 @@ WITH
 );
 
 
-
+-------------------------------------------------------------------------------------------------------------------------------
 
 

@@ -57,9 +57,39 @@ SELECT p.[BusinessEntityID] AS [ID]
      ,p.[FirstName] AS [FirstName]
       ,p.[FirstName] + ' ' + p.[LastName] AS [FullName]
 FROM [Person].[Person] P
-INNER JOIN [Person].[Person] P2 ON P2.[BusinessEntityID]=P.[BusinessEntityID]
+INNER JOIN [Person].[Person] P2 ON P2.[BusinessEntityID]=P.[BusinessEntityID]  --???
 AND p.[FirstName] like 'Z%'
 ORDER BY [FullName]
+
+---------------------------------------------------------------------------------------------------------------------------------
+SELECT [p].[BusinessEntityID] AS [id]
+		,(p.[FirstName] + isnull(' ' + p.MiddleName + ' ', ' ') +p.[LastName])  AS [fullname]
+		,p2.[BusinessEntityID] AS [ID of namesake] 
+		,(p2.[FirstName] + isnull(' ' + p2.MiddleName + ' ', ' ') +p2.[LastName])  AS [fullname]
+FROM [Person].[Person] p
+	 LEFT JOIN person.[Person] p2 
+		ON p.[LastName] = [p2].[LastName] AND [p].[BusinessEntityID]<>p2.[BusinessEntityID] ----filter out same persons in both parts
+WHERE p.[FirstName] LIKE 'z%' 
+ORDER BY p.[LastName];
+---------------------------------------------------------------------------------------------------------------------------------
+
+select q.Id
+, q.FullName
+    ,string_agg(q.IdOfNamesake, ';') WITHIN GROUP (ORDER BY q.FullNameOfNamesake asc) as IDsOfNamesake
+    ,string_agg(q.FullNameOfNamesake, ';') WITHIN GROUP (ORDER BY q.FullNameOfNamesake asc)as FullNamesOfNamesake 
+from (
+SELECT [p].[BusinessEntityID] AS Id
+        ,p.LastName
+		,(p.[FirstName] +isnull(' ' + p.MiddleName + ' ', ' ') + p.[LastName])  AS FullName
+		,p2.[BusinessEntityID] AS IdOfNamesake
+		,(p2.[FirstName] +isnull(' ' + p2.MiddleName + ' ', ' ') + p2.[LastName])  AS FullNameOfNamesake
+FROM [Person].[Person] p
+	 LEFT JOIN person.[Person] p2 
+		ON p.[LastName] = [p2].[LastName] AND [p].[BusinessEntityID]<>p2.[BusinessEntityID] ----filter out same persons in both parts
+WHERE p.[FirstName] LIKE 'z%' ) q
+group by q.Id, q.[LastName], FullName
+ORDER BY q.[LastName];
+---------------------------------------------------------------------------------------------------------------------------------
 
 --Subtask.03.06 Topic: SARG 
 /*Task: Find shipped orders with order date fitted the timeline for a specified date: 
@@ -104,8 +134,20 @@ SELECT C.[CustomerID]
         ,[TotalDue]
 FROM [Sales].[Customer] C
     JOIN [Sales].[SalesOrderHeader] H    ON H.[CustomerID]=C.[CustomerID]
-    JOIN [Sales].[SalesPerson] SP        ON SP.[TerritoryID]=H.[TerritoryID]
-    JOIN [Person].[Person] P             ON  P.[BusinessEntityID]=SP.[BusinessEntityID]
+    JOIN [Sales].[SalesPerson] SP        ON SP.[TerritoryID]=H.[TerritoryID]  
+    JOIN [Person].[Person] P             ON  P.[BusinessEntityID]=SP.[BusinessEntityID]  
 WHERE H.[OrderDate] BETWEEN '2014-01-01' AND '2014-12-31'
 ORDER BY [TotalDue] DESC
-OFFSET 3 ROWS FETCH NEXT 7 ROWS ONLY;
+--OFFSET 3 ROWS FETCH NEXT 7 ROWS ONLY;
+
+-------------------------------------------------------
+SELECT h.[CustomerID]
+       ,p.FirstName + isnull(' ' + p.MiddleName, '') + p.LastName as fullName
+       ,h.OrderDate
+        ,h.[TotalDue]
+FROM [Sales].[SalesOrderHeader] H  
+    JOIN  [Sales].[Customer] C  ON H.[CustomerID]=C.[CustomerID]
+    JOIN [Person].[Person] P    ON  P.[BusinessEntityID]=c.PersonID
+WHERE H.[OrderDate] BETWEEN '2014-01-01' AND '2014-12-31'
+ORDER BY [TotalDue] DESC
+--OFFSET 3 ROWS FETCH NEXT 7 ROWS ONLY
