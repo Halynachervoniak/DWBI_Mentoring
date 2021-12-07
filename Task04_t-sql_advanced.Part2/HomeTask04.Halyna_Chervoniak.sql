@@ -21,7 +21,7 @@ AS
      HAVING SUM(h.TotalDue)>20000
         )
 
-SELECT DISTINCT [CustomerName],[2011],[2012],[2013],[2014]
+SELECT DISTINCT [CustomerName],[2011],[2012],[2013],[2014]    -- distinct?
 FROM cte
 PIVOT (SUM([TotalSum])
 FOR [YearDate] IN (
@@ -237,7 +237,7 @@ DECLARE @currentstartyear date
 DECLARE @currentendyear date
 SET @currentstartyear= DATEADD(yy, DATEDIFF(yy, 0, GETDATE()), 0)
 SET @currentendyear=DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 1, -1)
-
+select @currentstartyear, @currentendyear
 --print @currentyear
 --print @currentendyear
 
@@ -276,7 +276,7 @@ AS
      HAVING SUM(h.TotalDue)>20000
         )
 
-SELECT DISTINCT [CustomerName],'+ @columns +'
+SELECT [CustomerName],'+ @columns +'
 FROM cte
 PIVOT (SUM([TotalSum])
 FOR [YearDate] IN (
@@ -286,3 +286,43 @@ print @columns
 exec (@columns);
 print @columns
  --  SELECT @columns;
+ -----------------------------------------------------------------------------
+go
+declare @columns nvarchar(max);
+declare @sql nvarchar(max);
+
+set @columns = N'';
+
+select @columns = '[' + string_agg(cast(YearOfOrder as nvarchar(max)), '], [') WITHIN GROUP (ORDER BY YearOfOrder ASC) + ']'
+from (
+    select year(OrderDate) as YearOfOrder
+    from [Sales].[SalesOrderHeader]
+    group by year(OrderDate)
+) x;
+
+set @sql = N'
+;with task_04_03_cte as (
+SELECT 
+    concat(p.[FirstName], '' '' + p.[MiddleName], '' '', p.[LastName]) AS CustomerName,
+    p.BusinessEntityID,
+/*    cast(sum(h.TotalDue) as decimal(18,2)) as TotalTotalDue,*/
+    count(h.SalesOrderID) AS #SalesOrderID,
+    year(h.OrderDate) as YearOfOrder
+FROM [Sales].[SalesOrderHeader] h
+    JOIN [Sales].[Customer] c             ON c.CustomerID=h.CustomerID
+    JOIN [Person].[Person] p              ON p.BusinessEntityID=c.PersonID
+    GROUP BY p.[LastName],p.[FirstName],p.[MiddleName],year(h.OrderDate) , p.BusinessEntityID
+    HAVING SUM(h.TotalDue) > 20000   /* need to be clarified*/
+)
+select 
+    [CustomerName],
+    p.BusinessEntityID,
+    ' + @columns + N' 
+from task_04_03_cte 
+    pivot (sum(#SalesOrderID) for YearOfOrder in (
+    ' + @columns + N')) as p
+order by CustomerName
+';
+
+print @sql
+exec (@sql);
